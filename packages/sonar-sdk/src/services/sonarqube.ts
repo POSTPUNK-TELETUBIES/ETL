@@ -1,5 +1,5 @@
-import { AxiosInstance } from 'axios';
-import { ResponseProjects } from '../types';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { ResponseMetrics, ResponseProjects } from '../types';
 
 export class SonarqubeClient {
   constructor(private client: AxiosInstance) {
@@ -18,7 +18,7 @@ export class SonarqubeClient {
     return baseUrl + '/api';
   };
 
-  async getProjects(pageNumber: number = 1, filter: string = '') {
+  async searchProjects(pageNumber: number = 1, filter: string = '') {
     const { data } = await this.client.get<ResponseProjects>(
       '/components/search_projects',
       {
@@ -30,5 +30,25 @@ export class SonarqubeClient {
       }
     );
     return data;
+  }
+
+  async searchMetrics(projectKeys: string[], metricKeys: string[]) {
+    const { data } = await this.client.get<ResponseMetrics>(
+      '/measures/search',
+      {
+        params: {
+          projectKeys: projectKeys.join(','),
+          metricKeys: metricKeys.join(','),
+        },
+      }
+    );
+    console.log({ data });
+    return data;
+  }
+}
+
+export class SonarqubeSdk extends SonarqubeClient {
+  constructor(options: AxiosRequestConfig) {
+    super(axios.create(options));
   }
 }

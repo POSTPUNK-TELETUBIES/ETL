@@ -1,2 +1,2 @@
 export * from './types';
-export { SonarqubeClient } from './services/sonarqube';
+export { SonarqubeClient, SonarqubeSdk } from './services/sonarqube';

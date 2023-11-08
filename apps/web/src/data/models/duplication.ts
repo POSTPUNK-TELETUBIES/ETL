@@ -3,10 +3,10 @@ const { Schema } = mongoose;
 
 export const duplicationSchema = new Schema(
   {
-    totalDensityPercent: { type: Number },
-    duplicatedLines: { type: Number },
-    duplicatedBlocks: { type: Number },
-    duplicatedFiles: { type: Number },
+    totalDensityPercent: { type: Number }, //duplicated_lines_density
+    duplicatedLines: { type: Number }, //duplicated_lines
+    duplicatedBlocks: { type: Number }, //duplicated_blocks
+    duplicatedFiles: { type: Number }, //duplicated_files
   },
   {
     timestamps: true,
