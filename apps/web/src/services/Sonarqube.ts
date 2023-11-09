@@ -1,14 +1,24 @@
-import { Component, SonarqubeClient } from 'sonar-sdk';
+import { Component, Metrics, SonarqubeClient } from 'sonar-sdk';
 import { resolvePaging } from '../utils';
 import { inject, injectable } from 'inversify';
-import { ContainerTags, CoverageMetricKeys } from '../types';
+import {
+  ContainerTags,
+  CoverageMetricKeys,
+  DuplicationMetricKeys,
+} from '../types';
 
-interface FetchingStrategy {
+export interface FetchingStrategy {
   getLeftProjects(leftPageCount: number): Promise<Component[]>;
 }
 
+export interface ISonarqubeService {
+  getAllProjects(): Promise<Component[]>;
+  getMetricsByKeys(keys: string[]): Promise<Metrics[]>;
+  setFetchingStrategy(strategy: FetchingStrategy): void;
+}
+
 @injectable()
-export class SonarqubeService {
+export class SonarqubeService implements ISonarqubeService {
   private fetchingStrategy?: FetchingStrategy;
 
   constructor(
@@ -37,10 +47,10 @@ export class SonarqubeService {
   }
 
   async getMetricsByKeys(keys: string[]) {
-    const { measures } = await this.client.searchMetrics(
-      keys,
-      Object.values(CoverageMetricKeys)
-    );
+    const { measures } = await this.client.searchMetrics(keys, [
+      ...Object.values(CoverageMetricKeys),
+      ...Object.values(DuplicationMetricKeys),
+    ]);
 
     return measures;
   }

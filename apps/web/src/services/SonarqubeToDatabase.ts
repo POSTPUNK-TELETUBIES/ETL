@@ -1,4 +1,4 @@
-import { SonarqubeService } from './Sonarqube';
+import { ISonarqubeService } from './Sonarqube';
 import { type Project } from '../data/models/project';
 import { inject, injectable } from 'inversify';
 import { ContainerTags } from '../types';
@@ -13,7 +13,8 @@ interface UpdateAcumulator {
 @injectable()
 export class SonarqubeToDatabase {
   constructor(
-    @inject(ContainerTags.Sonarqube) private sonarqubeService: SonarqubeService,
+    @inject(ContainerTags.ProxySonarClient)
+    private sonarqubeService: ISonarqubeService,
     @inject(ContainerTags.Project) private databaseModel: typeof Project
   ) {}
 

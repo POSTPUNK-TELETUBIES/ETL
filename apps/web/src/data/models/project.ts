@@ -1,7 +1,19 @@
 import mongoose from 'mongoose';
-import { coverageSchema } from './coverage';
-import { duplicationSchema } from './duplication';
+import { ICoverage, coverageSchema } from './coverage';
+import { IDuplication, duplicationSchema } from './duplication';
 const { Schema } = mongoose;
+
+export interface IProject {
+  sonarKey: string;
+  tribe: string;
+  squad: string;
+  name: string;
+  analysisDate: Date;
+  coverageMetrics: ICoverage;
+  duplicationMetrics: IDuplication;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export const projectSchema = new Schema(
   {

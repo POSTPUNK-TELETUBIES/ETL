@@ -1,6 +1,9 @@
 export enum Operations {
   ProjectMigrations = 'PROJECT_MIGRATIONS',
   MetricsMigrations = 'METRICS_MIGRATIONS',
+  CoverageReports = 'COVERAGE_REPORTS',
+  DuplicationReports = 'DUPLICATION_REPORTS',
+  Exit = 'EXIT',
 }
 
 export enum ContainerTags {
@@ -9,6 +12,9 @@ export enum ContainerTags {
   Sonarqube = 'SONARQUBE',
   Project = 'PROJECT',
   SonarqubeMigrations = 'SONARQUBE_MIGRATIONS',
+  Reports = 'REPORTS',
+  ProxySonarClient = 'PROXY_SONAR_CLIENT',
+  SonarqubeLoggerIsOn = 'SONARQUBE_LOGGER_IS_ON',
 }
 
 export enum CoverageMetricKeys {

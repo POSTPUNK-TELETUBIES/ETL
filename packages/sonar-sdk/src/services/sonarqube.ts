@@ -42,7 +42,6 @@ export class SonarqubeClient {
         },
       }
     );
-    console.log({ data });
     return data;
   }
 }

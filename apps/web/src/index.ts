@@ -11,6 +11,12 @@ import {
 } from './services/Sonarqube';
 import { SonarqubeSdk } from 'sonar-sdk';
 import { SonarqubeToDatabase } from './services/SonarqubeToDatabase';
+import pino, { destination } from 'pino';
+import { Reports } from './services/Reports';
+import { writeFile, mkdir } from 'node:fs/promises';
+import { SonarqubeLogger } from './services/Proxies/SonarqubeLogger';
+
+const logger = pino(destination({ dest: './logs/log.log' }));
 
 const container = new Container();
 
@@ -45,10 +51,66 @@ container
   .to(SonarqubeToDatabase)
   .inSingletonScope();
 
-const init = async () => {
-  console.log('inicializando conexion');
-  await connect();
-  const answer = await select({
+container.bind(ContainerTags.Reports).to(Reports).inSingletonScope();
+container.bind(ContainerTags.SonarqubeLoggerIsOn).toConstantValue(true);
+container
+  .bind(ContainerTags.ProxySonarClient)
+  .to(SonarqubeLogger)
+  .inSingletonScope();
+
+const operations = {
+  [Operations.ProjectMigrations]: async () => {
+    console.log('Iniciando Migracion');
+    console.time('Duracion');
+
+    await container
+      .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
+      .migrateProjects();
+    console.timeEnd('Duracion');
+    console.log('Migracion finalizada');
+  },
+  [Operations.MetricsMigrations]: async () => {
+    console.log('Iniciando Migracion');
+    console.time('Duracion');
+
+    await container
+      .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
+      .migrateMetrics();
+    console.timeEnd('Duracion');
+    console.log('Migracion finalizada');
+  },
+  [Operations.CoverageReports]: async () => {
+    console.log('Iniciando Migracion');
+    console.time('Duracion');
+
+    const dataCsv = await container
+      .get<Reports>(ContainerTags.Reports)
+      .getCoverageMetrics();
+    await mkdir('./csv', { recursive: true });
+    await writeFile('./csv/coverageMetrics.csv', dataCsv);
+    console.timeEnd('Duracion');
+    console.log('Migracion finalizada');
+  },
+  [Operations.DuplicationReports]: async () => {
+    console.log('Iniciando Migracion');
+    console.time('Duracion');
+
+    const dataCsv = await container
+      .get<Reports>(ContainerTags.Reports)
+      .getDuplicationMetrics();
+    await mkdir('./csv', { recursive: true });
+    await writeFile('./csv/duplicationMetrics.csv', dataCsv);
+    console.timeEnd('Duracion');
+    console.log('Migracion finalizada');
+  },
+  [Operations.Exit]: () => {
+    console.log('Saliendo');
+    process.exit(0);
+  },
+};
+
+const mainSelect = async () => {
+  return await select({
     message: 'Seleccione una operacion:',
     choices: [
       {
@@ -59,42 +121,38 @@ const init = async () => {
         name: 'Migracion de metricas',
         value: Operations.MetricsMigrations,
       },
+      {
+        name: 'Generar reportes de coverage',
+        value: Operations.CoverageReports,
+      },
+      {
+        name: 'Generar reportes de duplicacion',
+        value: Operations.DuplicationReports,
+      },
+      {
+        name: 'Salir',
+        value: Operations.Exit,
+      },
     ],
   });
+};
 
-  if (answer === Operations.ProjectMigrations) {
-    try {
-      console.log('Iniciando Migracion');
-      console.time('Duracion');
+const getAnswer = async () => {
+  const answer = await mainSelect();
 
-      await container
-        .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
-        .migrateProjects();
-      console.timeEnd('Duracion');
-      console.log('Migracion finalizada');
-    } catch (_error) {
-      console.log(_error);
-      console.log('Ups Algo salio mal!');
-    }
-    process.exit(0);
+  try {
+    await operations[answer]();
+  } catch (error) {
+    logger.error(error);
+    console.log('Ocurrio un error');
   }
+  getAnswer();
+};
 
-  if (answer === Operations.MetricsMigrations) {
-    try {
-      console.log('Iniciando Migracion');
-      console.time('Duracion');
-
-      await container
-        .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
-        .migrateMetrics();
-      console.timeEnd('Duracion');
-      console.log('Migracion finalizada');
-    } catch (_error) {
-      console.log(_error);
-      console.log('Ups Algo salio mal!');
-    }
-    process.exit(0);
-  }
+const init = async () => {
+  console.log('inicializando conexion');
+  await connect();
+  getAnswer();
 };
 
 init();

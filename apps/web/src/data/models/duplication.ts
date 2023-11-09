@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
+export interface IDuplication {
+  totalDensityPercent: number;
+  duplicatedLines: number;
+  duplicatedBlocks: number;
+  duplicatedFiles: number;
+}
+
 export const duplicationSchema = new Schema(
   {
     totalDensityPercent: { type: Number }, //duplicated_lines_density

@@ -1,6 +1,16 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
+export interface ICoverage {
+  totalCoveragePercent: number;
+  linesToCover: number;
+  linesNoCover: number;
+  linesCoveragePercent: number;
+  qtyConditionsToCover: number;
+  qtyConditionsNoCover: number;
+  conditionsCoveragePercentage: number;
+}
+
 export const coverageSchema = new Schema(
   {
     totalCoveragePercent: { type: Number }, //coverage
