@@ -16,7 +16,7 @@ import { Reports } from './services/Reports';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { SonarqubeLogger } from './services/Proxies/SonarqubeLogger';
 
-const logger = pino(destination({ dest: './logs/log.log' }));
+const logger = pino(destination({ dest: `${env.logFolder}/log.log` }));
 
 const container = new Container();
 

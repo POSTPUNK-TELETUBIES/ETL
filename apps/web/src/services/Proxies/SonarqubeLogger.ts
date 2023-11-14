@@ -1,17 +1,18 @@
 import { Component, Metrics } from 'sonar-sdk';
 import {
   FetchingStrategy,
-  ISonarqubeService,
+  FetchMetricsAndProjects,
   SonarqubeService,
 } from '../Sonarqube';
 import pino, { destination } from 'pino';
 import { inject, injectable } from 'inversify';
 import { ContainerTags } from '../../types';
+import { env } from '../../config';
 
-const logger = pino(destination({ dest: './logs/sonarLogger.log' }));
+const logger = pino(destination({ dest: `${env.logFolder}/sonarLogger.log` }));
 
 @injectable()
-export class SonarqubeLogger implements ISonarqubeService {
+export class SonarqubeLogger implements FetchMetricsAndProjects {
   constructor(
     @inject(ContainerTags.Sonarqube)
     private originalService: SonarqubeService,
