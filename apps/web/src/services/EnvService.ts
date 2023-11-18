@@ -1,11 +1,8 @@
-import { config } from 'dotenv';
+import 'dotenv/config';
 
 export interface GetEnvOptions {
   isRequired?: boolean;
 }
-
-// Carga las variables de entorno desde el archivo .env
-config();
 
 export class RequiredEnvError extends Error {
   constructor(envName: string) {
