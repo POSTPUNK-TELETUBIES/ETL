@@ -16,7 +16,7 @@ import { Reports } from './services/Reports';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { SonarqubeLogger } from './services/Proxies/SonarqubeLogger';
 
-const logger = pino(destination({ dest: './logs/log.log' }));
+const logger = pino(destination({ dest: `${env.logFolder}/log.log` }));
 
 const container = new Container();
 
@@ -58,50 +58,45 @@ container
   .to(SonarqubeLogger)
   .inSingletonScope();
 
+async function executeWithTime<T = unknown>(callback: () => Promise<T>) {
+  const initTime = Date.now()
+  await callback()
+  console.log(`Duracion: ${(Date.now() - initTime)/1000} segundos`)
+}
+
 const operations = {
   [Operations.ProjectMigrations]: async () => {
-    console.log('Iniciando Migracion');
-    console.time('Duracion');
-
-    await container
-      .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
-      .migrateProjects();
-    console.timeEnd('Duracion');
-    console.log('Migracion finalizada');
+  executeWithTime(async () => {
+      await container
+        .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
+        .migrateProjects();
+    }
+    )
   },
   [Operations.MetricsMigrations]: async () => {
-    console.log('Iniciando Migracion');
-    console.time('Duracion');
-
-    await container
+    executeWithTime(async () => {
+      await container
       .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
       .migrateMetrics();
-    console.timeEnd('Duracion');
-    console.log('Migracion finalizada');
+    })
   },
   [Operations.CoverageReports]: async () => {
-    console.log('Iniciando Migracion');
-    console.time('Duracion');
-
-    const dataCsv = await container
+    executeWithTime(async () => {
+      const dataCsv = await container
       .get<Reports>(ContainerTags.Reports)
       .getCoverageMetrics();
     await mkdir('./csv', { recursive: true });
     await writeFile('./csv/coverageMetrics.csv', dataCsv);
-    console.timeEnd('Duracion');
-    console.log('Migracion finalizada');
+    })
   },
   [Operations.DuplicationReports]: async () => {
-    console.log('Iniciando Migracion');
-    console.time('Duracion');
-
-    const dataCsv = await container
+    executeWithTime(async () => {
+      const dataCsv = await container
       .get<Reports>(ContainerTags.Reports)
       .getDuplicationMetrics();
     await mkdir('./csv', { recursive: true });
     await writeFile('./csv/duplicationMetrics.csv', dataCsv);
-    console.timeEnd('Duracion');
-    console.log('Migracion finalizada');
+    })
   },
   [Operations.Exit]: () => {
     console.log('Saliendo');

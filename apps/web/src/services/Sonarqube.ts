@@ -11,14 +11,14 @@ export interface FetchingStrategy {
   getLeftProjects(leftPageCount: number): Promise<Component[]>;
 }
 
-export interface ISonarqubeService {
+export interface FetchMetricsAndProjects {
   getAllProjects(): Promise<Component[]>;
   getMetricsByKeys(keys: string[]): Promise<Metrics[]>;
   setFetchingStrategy(strategy: FetchingStrategy): void;
 }
 
 @injectable()
-export class SonarqubeService implements ISonarqubeService {
+export class SonarqubeService implements FetchMetricsAndProjects {
   private fetchingStrategy?: FetchingStrategy;
 
   constructor(
