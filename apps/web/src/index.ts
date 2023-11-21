@@ -61,7 +61,7 @@ container
 async function executeWithTime<T = unknown>(callback: () => Promise<T>) {
   const initTime = Date.now()
   await callback()
-  console.log(`Duracion: ${(Date.now() - initTime)/1000} segundos`)
+  console.log(`\nDuracion: ${(Date.now() - initTime)/1000} segundos\n`)
 }
 
 const operations = {
