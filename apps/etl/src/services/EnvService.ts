@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 export interface GetEnvOptions {
   isRequired?: boolean;
+  defaultValue?: string;
 }
 
 export class RequiredEnvError extends Error {
@@ -21,13 +22,13 @@ export class EnvService {
   }
 
   getEnv(envName: string, options: GetEnvOptions = {}) {
-    const { isRequired } = this.mergeOptions(options);
+    const { isRequired, defaultValue } = this.mergeOptions(options);
 
     const value = process.env[envName];
 
     if (isRequired && !value) throw new RequiredEnvError(envName);
 
-    return value;
+    return value ?? defaultValue;
   }
 
   getOrThrow(envName: string, options: GetEnvOptions = {}): string {

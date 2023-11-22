@@ -17,19 +17,39 @@ export interface FetchMetricsAndProjects {
   setFetchingStrategy(strategy: FetchingStrategy): void;
 }
 
+export class ClassicFetchingStrategy implements FetchingStrategy {
+  constructor(private client: SonarqubeClient) {}
+
+  async getLeftProjects(leftPageCount: number) {
+    let result: Component[] = [];
+    for (let i = 0; i < leftPageCount; i++) {
+      const { components } = await this.client.searchProjects(
+        i + 2,
+        'analysisDate'
+      );
+      result = result.concat(components);
+    }
+    return result;
+  }
+}
+
+
 @injectable()
 export class SonarqubeService implements FetchMetricsAndProjects {
-  private fetchingStrategy?: FetchingStrategy;
+  private fetchingStrategy: FetchingStrategy;
 
   constructor(
     @inject(ContainerTags.SonarClient) protected client: SonarqubeClient
-  ) {}
+  ) {
+    this.fetchingStrategy = new ClassicFetchingStrategy(client);
+  }
 
   setFetchingStrategy(strategy: FetchingStrategy) {
     this.fetchingStrategy = strategy;
   }
 
   async getAllProjects() {
+
     const { paging, components } = await this.client.searchProjects(
       1,
       'analysisDate'
@@ -56,21 +76,6 @@ export class SonarqubeService implements FetchMetricsAndProjects {
   }
 }
 
-export class ClassicFetchingStrategy implements FetchingStrategy {
-  constructor(private client: SonarqubeClient) {}
-
-  async getLeftProjects(leftPageCount: number) {
-    let result: Component[] = [];
-    for (let i = 0; i < leftPageCount; i++) {
-      const { components } = await this.client.searchProjects(
-        i + 2,
-        'analysisDate'
-      );
-      result = result.concat(components);
-    }
-    return result;
-  }
-}
 
 export class ConcurrentFetchingStrategy implements FetchingStrategy {
   constructor(private client: SonarqubeClient) {}

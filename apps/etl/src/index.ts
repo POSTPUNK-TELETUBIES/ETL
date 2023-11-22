@@ -11,12 +11,15 @@ import {
 } from './services/Sonarqube';
 import { SonarqubeSdk } from 'sonar-sdk';
 import { SonarqubeToDatabase } from './services/SonarqubeToDatabase';
-import pino, { destination } from 'pino';
+import pino, { destination, Logger } from 'pino';
 import { Reports } from './services/Reports';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { SonarqubeLogger } from './services/Proxies/SonarqubeLogger';
 
-const logger = pino(destination({ dest: `${env.logFolder}/log.log` }));
+const logger = pino(destination({ dest: `${env.generaLogsPath}` }));
+
+
+const loggerForFunctions  = pino()
 
 const container = new Container();
 
@@ -37,12 +40,12 @@ const currentStrategy = new ConcurrentFetchingStrategy(
 );
 
 container
-  .bind<SonarqubeService>(ContainerTags.Sonarqube)
-  .to(SonarqubeService)
+  .bind<SonarqubeService>(SonarqubeService)
+  .toSelf()
   .inSingletonScope();
 
 container
-  .get<SonarqubeService>(ContainerTags.Sonarqube)
+  .get<SonarqubeService>(SonarqubeService)
   .setFetchingStrategy(currentStrategy);
 
 container.bind<typeof Project>(ContainerTags.Project).toConstantValue(Project);
@@ -51,17 +54,29 @@ container
   .to(SonarqubeToDatabase)
   .inSingletonScope();
 
-container.bind(ContainerTags.Reports).to(Reports).inSingletonScope();
-container.bind(ContainerTags.SonarqubeLoggerIsOn).toConstantValue(true);
+container.bind(Reports).toSelf().inSingletonScope();
+
+container.bind(ContainerTags.Options).toConstantValue({
+  isOn: true,
+});
+
 container
   .bind(ContainerTags.ProxySonarClient)
   .to(SonarqubeLogger)
   .inSingletonScope();
 
-async function executeWithTime<T = unknown>(callback: () => Promise<T>) {
+const timeCalcDefaultCallback = (initTime: number) => `Duracion: ${(Date.now() - initTime)/1000} segundos`
+
+async function executeWithTime<T = unknown>(
+  callback: () => Promise<T>, 
+  logger: Logger = loggerForFunctions,
+  timeCalcCallback = timeCalcDefaultCallback
+) {
   const initTime = Date.now()
+
   await callback()
-  console.log(`Duracion: ${(Date.now() - initTime)/1000} segundos`)
+
+  logger.info(timeCalcCallback(initTime))
 }
 
 const operations = {
@@ -83,7 +98,7 @@ const operations = {
   [Operations.CoverageReports]: async () => {
     executeWithTime(async () => {
       const dataCsv = await container
-      .get<Reports>(ContainerTags.Reports)
+      .get<Reports>(Reports)
       .getCoverageMetrics();
     await mkdir('./csv', { recursive: true });
     await writeFile('./csv/coverageMetrics.csv', dataCsv);
@@ -92,14 +107,14 @@ const operations = {
   [Operations.DuplicationReports]: async () => {
     executeWithTime(async () => {
       const dataCsv = await container
-      .get<Reports>(ContainerTags.Reports)
+      .get<Reports>(Reports)
       .getDuplicationMetrics();
     await mkdir('./csv', { recursive: true });
     await writeFile('./csv/duplicationMetrics.csv', dataCsv);
     })
   },
-  [Operations.Exit]: () => {
-    console.log('Saliendo');
+  [Operations.Exit]: (logger: Logger = loggerForFunctions,) => {
+    logger.info('Saliendo');
     process.exit(0);
   },
 };
