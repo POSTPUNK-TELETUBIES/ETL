@@ -4,31 +4,53 @@ import {
   FetchMetricsAndProjects,
   SonarqubeService,
 } from '../Sonarqube';
-import pino, { destination } from 'pino';
+import pino, { destination, Logger } from 'pino';
 import { inject, injectable } from 'inversify';
 import { ContainerTags } from '../../types';
 import { env } from '../../config';
 
-const logger = pino(destination({ dest: `${env.logFolder}/sonarLogger.log` }));
+interface SonarqubeLoggerOptions{
+  isOn?: boolean;
+  logger?: Logger
+}
+
 
 @injectable()
 export class SonarqubeLogger implements FetchMetricsAndProjects {
+  private static defaultOptions: SonarqubeLoggerOptions = {
+    logger:pino(destination({ dest: `${env.sonarQubeLogs}` })),
+    isOn: false,
+  };
+
   constructor(
-    @inject(ContainerTags.Sonarqube)
+    @inject(SonarqubeService)
     private originalService: SonarqubeService,
-    @inject(ContainerTags.SonarqubeLoggerIsOn) private isOn: boolean = false
-  ) {}
+    @inject(ContainerTags.Options) private options = SonarqubeLogger.defaultOptions
+  ) {
+    this.options = {...SonarqubeLogger.defaultOptions, ...options}
+  }
+
+  private logInfoIfIsOn(data: unknown){
+    if(this.options.isOn)
+      this.options.logger?.info(data);
+  }
+
   async getAllProjects(): Promise<Component[]> {
     const projects = await this.originalService.getAllProjects();
-    if (this.isOn) logger.info(projects);
+  
+    this.logInfoIfIsOn(projects)
 
     return projects;
   }
+
   getMetricsByKeys(keys: string[]): Promise<Metrics[]> {
     const metrics = this.originalService.getMetricsByKeys(keys);
-    if (this.isOn) logger.info(metrics);
+  
+    this.logInfoIfIsOn(metrics);
+
     return metrics;
   }
+
   setFetchingStrategy(strategy: FetchingStrategy): void {
     this.originalService.setFetchingStrategy(strategy);
   }

@@ -19,28 +19,25 @@ const createComponent = () => ({
   analysisDate: faker.date.past().toISOString(),
 });
 
-const totalComponentes = Array.from({ length: total }).map(createComponent);
+const totalComponents = Array
+  .from({ length: total })
+  .map(createComponent);
 
-const getProjects = vi.fn((page: number) => ({
+const searchProjects = vi.fn((page: number) => ({
   paging: getPaging(page),
-  components: totalComponentes.slice((page - 1) * pageSize, page * pageSize),
+  components: totalComponents.slice((page - 1) * pageSize, page * pageSize),
 }));
 
-vi.mock('sonar-sdk', () => {
-  return {
-    SonarqubeSdk: vi.fn(() => {
-      return {
-        getProjects,
-      };
-    }),
-  };
-});
+vi.mock('sonar-sdk', () => ({
+    SonarqubeSdk: vi.fn(() => ({searchProjects})),
+  }
+));
 
 afterAll(() => {
   vi.resetAllMocks();
 });
 
-describe('Sonarqube service', async () => {
+describe.concurrent('Sonarqube service', async () => {
   const sonarQubeClient = new SonarqubeSdk({
     baseURL: faker.internet.url(),
   });
@@ -48,7 +45,7 @@ describe('Sonarqube service', async () => {
   const response = await sonarqubeService.getAllProjects();
 
   it('project should be equal components', async () => {
-    expect(response).toEqual(totalComponentes);
+    expect(response).toEqual(totalComponents);
   });
 
   it('should return a list of projects', async () => {

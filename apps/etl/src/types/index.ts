@@ -9,12 +9,10 @@ export enum Operations {
 export enum ContainerTags {
   SonarClient = 'SONARCLIENT',
   Options = 'OPTIONS',
-  Sonarqube = 'SONARQUBE',
   Project = 'PROJECT',
   SonarqubeMigrations = 'SONARQUBE_MIGRATIONS',
-  Reports = 'REPORTS',
   ProxySonarClient = 'PROXY_SONAR_CLIENT',
-  SonarqubeLoggerIsOn = 'SONARQUBE_LOGGER_IS_ON',
+  SonarqubeLoggerOptions = 'SONARQUBE_LOGGER_OPTIONS',
 }
 
 export enum CoverageMetricKeys {
