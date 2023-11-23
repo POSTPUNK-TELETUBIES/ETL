@@ -9,7 +9,7 @@ import { inject, injectable } from 'inversify';
 import { ContainerTags } from '../../types';
 import { env } from '../../config';
 
-interface SonarqubeLoggerOptions{
+interface SonarqubeLoggerOptions {
   isOn?: boolean;
   logger?: Logger
 }
@@ -18,7 +18,7 @@ interface SonarqubeLoggerOptions{
 @injectable()
 export class SonarqubeLogger implements FetchMetricsAndProjects {
   private static defaultOptions: SonarqubeLoggerOptions = {
-    logger:pino(destination({ dest: `${env.sonarQubeLogs}` })),
+    logger: pino(destination({ dest: `${env.sonarQubeLogs}`, sync: true })),
     isOn: false,
   };
 
@@ -27,17 +27,17 @@ export class SonarqubeLogger implements FetchMetricsAndProjects {
     private originalService: SonarqubeService,
     @inject(ContainerTags.Options) private options = SonarqubeLogger.defaultOptions
   ) {
-    this.options = {...SonarqubeLogger.defaultOptions, ...options}
+    this.options = { ...SonarqubeLogger.defaultOptions, ...options }
   }
 
-  private logInfoIfIsOn(data: unknown){
-    if(this.options.isOn)
+  private logInfoIfIsOn(data: unknown) {
+    if (this.options.isOn)
       this.options.logger?.info(data);
   }
 
   async getAllProjects(): Promise<Component[]> {
     const projects = await this.originalService.getAllProjects();
-  
+
     this.logInfoIfIsOn(projects)
 
     return projects;
@@ -45,7 +45,7 @@ export class SonarqubeLogger implements FetchMetricsAndProjects {
 
   getMetricsByKeys(keys: string[]): Promise<Metrics[]> {
     const metrics = this.originalService.getMetricsByKeys(keys);
-  
+
     this.logInfoIfIsOn(metrics);
 
     return metrics;

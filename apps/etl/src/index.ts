@@ -16,10 +16,9 @@ import { Reports } from './services/Reports';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { SonarqubeLogger } from './services/Proxies/SonarqubeLogger';
 
-const logger = pino(destination({ dest: `${env.generaLogsPath}` }));
+const logger = pino(destination({ dest: `${env.generaLogsPath}`, sync: true }));
 
-
-const loggerForFunctions  = pino()
+const loggerForFunctions = pino()
 
 const container = new Container();
 
@@ -56,7 +55,7 @@ container
 
 container.bind(Reports).toSelf().inSingletonScope();
 
-container.bind(ContainerTags.Options).toConstantValue({
+container.bind(ContainerTags.SonarqubeLoggerOptions).toConstantValue({
   isOn: true,
 });
 
@@ -65,10 +64,10 @@ container
   .to(SonarqubeLogger)
   .inSingletonScope();
 
-const timeCalcDefaultCallback = (initTime: number) => `Duracion: ${(Date.now() - initTime)/1000} segundos`
+const timeCalcDefaultCallback = (initTime: number) => `Duracion: ${(Date.now() - initTime) / 1000} segundos`
 
 async function executeWithTime<T = unknown>(
-  callback: () => Promise<T>, 
+  callback: () => Promise<T>,
   logger: Logger = loggerForFunctions,
   timeCalcCallback = timeCalcDefaultCallback
 ) {
@@ -81,7 +80,7 @@ async function executeWithTime<T = unknown>(
 
 const operations = {
   [Operations.ProjectMigrations]: async () => {
-  executeWithTime(async () => {
+    await executeWithTime(async () => {
       await container
         .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
         .migrateProjects();
@@ -89,31 +88,31 @@ const operations = {
     )
   },
   [Operations.MetricsMigrations]: async () => {
-    executeWithTime(async () => {
+    await executeWithTime(async () => {
       await container
-      .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
-      .migrateMetrics();
+        .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
+        .migrateMetrics();
     })
   },
   [Operations.CoverageReports]: async () => {
-    executeWithTime(async () => {
+    await executeWithTime(async () => {
       const dataCsv = await container
-      .get<Reports>(Reports)
-      .getCoverageMetrics();
-    await mkdir('./csv', { recursive: true });
-    await writeFile('./csv/coverageMetrics.csv', dataCsv);
+        .get<Reports>(Reports)
+        .getCoverageMetrics();
+      await mkdir('./csv', { recursive: true });
+      await writeFile('./csv/coverageMetrics.csv', dataCsv);
     })
   },
   [Operations.DuplicationReports]: async () => {
-    executeWithTime(async () => {
+    await executeWithTime(async () => {
       const dataCsv = await container
-      .get<Reports>(Reports)
-      .getDuplicationMetrics();
-    await mkdir('./csv', { recursive: true });
-    await writeFile('./csv/duplicationMetrics.csv', dataCsv);
+        .get<Reports>(Reports)
+        .getDuplicationMetrics();
+      await mkdir('./csv', { recursive: true });
+      await writeFile('./csv/duplicationMetrics.csv', dataCsv);
     })
   },
-  [Operations.Exit]: (logger: Logger = loggerForFunctions,) => {
+  [Operations.Exit]: () => {
     logger.info('Saliendo');
     process.exit(0);
   },
@@ -156,13 +155,13 @@ const getAnswer = async () => {
     logger.error(error);
     console.log('Ocurrio un error');
   }
-  getAnswer();
+  await getAnswer();
 };
 
 const init = async () => {
   console.log('inicializando conexion');
   await connect();
-  getAnswer();
+  await getAnswer();
 };
 
 init();
