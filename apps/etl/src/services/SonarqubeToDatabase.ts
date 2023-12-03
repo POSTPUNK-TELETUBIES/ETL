@@ -1,4 +1,4 @@
-import { FetchMetricsAndProjects } from './Sonarqube';
+import { SonarQubeFetchService } from './Sonarqube';
 import { type Project } from '../data/models/project';
 import { inject, injectable } from 'inversify';
 import { ContainerTags } from '../types';
@@ -14,7 +14,7 @@ interface UpdateAcumulator {
 export class SonarqubeToDatabase {
   constructor(
     @inject(ContainerTags.ProxySonarClient)
-    private sonarqubeService: FetchMetricsAndProjects,
+    private sonarqubeService: SonarQubeFetchService,
     @inject(ContainerTags.Project) private databaseModel: typeof Project
   ) {}
 
@@ -73,7 +73,7 @@ export class SonarqubeToDatabase {
     for (let i = 0; i < projectKeysFromDb.length; i += 10) {
       const keysChunk = projectKeysFromDb.slice(i, i + 10);
       const metrics = await this.sonarqubeService.getMetricsByKeys(keysChunk);
-      console.log({ metrics });
+
       const metricsByProjectKey = groupBy(prop('component'), metrics);
 
       const updateData = keysChunk.map((key) => {
