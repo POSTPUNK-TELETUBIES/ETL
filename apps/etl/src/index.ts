@@ -1,82 +1,16 @@
 import 'reflect-metadata';
 import { connect } from './services/Connection';
-import { Project } from './data/models/project';
+
 import { select } from '@inquirer/prompts';
-import { ContainerTags, Operations } from './types';
-import { Container } from 'inversify';
-import { env } from './config';
-import {
-  ConcurrentFetchingStrategy,
-  SonarqubeService,
-} from './services/Sonarqube';
-import { SonarqubeSdk } from 'sonar-sdk';
+import { ContainerTags, NewContainerTags, Operations } from './types';
 import { SonarqubeToDatabase } from './services/SonarqubeToDatabase';
-import pino, { destination, Logger } from 'pino';
 import { Reports } from './services/Reports';
 import { writeFile, mkdir } from 'node:fs/promises';
-import { SonarqubeLogger } from './services/Proxies/SonarqubeLogger';
-
-const logger = pino(destination({ dest: `${env.generaLogsPath}`, sync: true }));
-
-const loggerForFunctions = pino()
-
-const container = new Container();
-
-container.bind(ContainerTags.Options).toConstantValue({
-  baseURL: env.apiBaseUrl,
-  auth: {
-    username: env.sonarToken,
-    password: '',
-  },
-});
-
-container
-  .bind<SonarqubeSdk>(ContainerTags.SonarClient)
-  .toConstantValue(new SonarqubeSdk(container.get(ContainerTags.Options)));
-
-const currentStrategy = new ConcurrentFetchingStrategy(
-  container.get(ContainerTags.SonarClient)
-);
-
-container
-  .bind<SonarqubeService>(SonarqubeService)
-  .toSelf()
-  .inSingletonScope();
-
-container
-  .get<SonarqubeService>(SonarqubeService)
-  .setFetchingStrategy(currentStrategy);
-
-container.bind<typeof Project>(ContainerTags.Project).toConstantValue(Project);
-container
-  .bind(ContainerTags.SonarqubeMigrations)
-  .to(SonarqubeToDatabase)
-  .inSingletonScope();
-
-container.bind(Reports).toSelf().inSingletonScope();
-
-container.bind(ContainerTags.SonarqubeLoggerOptions).toConstantValue({
-  isOn: true,
-});
-
-container
-  .bind(ContainerTags.ProxySonarClient)
-  .to(SonarqubeLogger)
-  .inSingletonScope();
-
-const timeCalcDefaultCallback = (initTime: number) => `Duracion: ${(Date.now() - initTime) / 1000} segundos`
-
-async function executeWithTime<T = unknown>(
-  callback: () => Promise<T>,
-  logger: Logger = loggerForFunctions,
-  timeCalcCallback = timeCalcDefaultCallback
-) {
-  const initTime = Date.now()
-
-  await callback()
-
-  logger.info(timeCalcCallback(initTime))
-}
+import { logger } from './global';
+import { container } from './modules';
+import { executeWithTime } from './utils';
+import { newContainer } from './modules/newContainer';
+import { IssuePipelineMigrationStrategy } from './services/Issues/IssuesPipelineMigration/Strategy';
 
 const operations = {
   [Operations.ProjectMigrations]: async () => {
@@ -116,6 +50,13 @@ const operations = {
     logger.info('Saliendo');
     process.exit(0);
   },
+  [Operations.IssuesMigrations]: async ()=>{
+    await executeWithTime(async()=>
+      await newContainer
+        .get<IssuePipelineMigrationStrategy>(NewContainerTags.ISSUES_PIPELINE_STRATEGY)
+        .migrateAll()
+    )
+  }
 };
 
 const mainSelect = async () => {
@@ -137,6 +78,10 @@ const mainSelect = async () => {
       {
         name: 'Generar reportes de duplicacion',
         value: Operations.DuplicationReports,
+      },
+      {
+        name: 'Migrar Issues',
+        value: Operations.IssuesMigrations,
       },
       {
         name: 'Salir',
