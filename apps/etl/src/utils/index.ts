@@ -1,4 +1,6 @@
-import { Component, Paging } from 'sonar-sdk';
+import { Logger } from 'pino';
+import { Component } from 'sonar-sdk';
+import { loggerForFunctions } from '../global';
 
 export const parseProject = (project: Component) => ({
   sonarKey: project.key,
@@ -6,18 +8,17 @@ export const parseProject = (project: Component) => ({
   analysisDate: project.analysisDate,
 });
 
-export const resolvePaging = ({ pageSize, total }: Paging) =>
-  Math.ceil(total / pageSize);
+export const timeCalcDefaultCallback = (initTime: number) => 
+  `Duracion: ${(Date.now() - initTime) / 1000} segundos`
 
-export async function getLeftData<T = unknown>(
-  leftPageCount: number, fetchDataCb: 
-  (nextIndex: number)=>Promise<T[]>,
+export async function executeWithTime<T = unknown>(
+  callback: () => Promise<T>,
+  logger: Logger = loggerForFunctions,
+  timeCalcCallback = timeCalcDefaultCallback
 ) {
-  let result: T[] = [];
-  for (let i = 0; i < leftPageCount; i++) {
-    const fetchResult = await fetchDataCb(i +2) 
+  const initTime = Date.now()
 
-    result = result.concat(fetchResult);
-  }
-  return result;
+  await callback()
+
+  logger.info(timeCalcCallback(initTime))
 }

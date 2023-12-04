@@ -1,9 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import 'reflect-metadata'
+import { afterAll, describe, expect, it, vi } from "vitest";
 import { ProjectPipelineMigrationDefaultStrategy } from '.'
 import { ProjectDataLoaderStrategy } from "../../ProjectDataLoader/Strategies";
 import { IProject } from "../../../../data/models/project";
 import { ProjectTransformer } from "../../ProjectTransformer";
-import { ResponseProjects, SonarqubeSdk } from "sonar-sdk";
+import { Component, ResponseProjects, SonarqubeSdk } from "sonar-sdk";
 
 class DummyStrategy implements ProjectDataLoaderStrategy{
   async createWithBasicData(data: Partial<IProject>[]){
@@ -15,18 +16,26 @@ const dataSource = new SonarqubeSdk({
   baseURL: 'https://fakeurl.com'
 })
 
+const dummyPagination = {
+  pageIndex: 0,
+  pageSize: 0,
+  total: 0
+}
+
+const dummyComponents: Component[] = [];
+
 const dummyData: ResponseProjects = {
-  components: [],
+  components: dummyComponents,
   facets: [],
-  paging: {
-    pageIndex: 0,
-    pageSize: 0,
-    total: 0
-  }
+  paging: dummyPagination
 };
 
 vi.spyOn(dataSource.fetchers.components, 'searchProjects')
-  .mockImplementationOnce(()=>Promise.resolve(dummyData))
+  .mockImplementation(()=>Promise.resolve(dummyData))
+
+afterAll(()=>{
+  vi.clearAllMocks()
+})
 
 const strategy = new ProjectPipelineMigrationDefaultStrategy({
   dataLoader: new DummyStrategy(),
@@ -34,10 +43,16 @@ const strategy = new ProjectPipelineMigrationDefaultStrategy({
   dataSource
 });
 
-describe('Default Strategy', ()=>{
+describe.concurrent('Default Strategy', ()=>{
   it('Migrate basic data projects', async ()=>{
     const data = await strategy.migrateBasicDataProjects()
 
-    expect(data).toStrictEqual([])
+    expect(dummyData).toMatchObject(data)
+  })
+
+  it('Migrate all basic data projects', async ()=>{
+    const data = await strategy.migrateAllBasicDataProjects()
+
+    expect(data).toStrictEqual(dummyComponents)
   })
 })

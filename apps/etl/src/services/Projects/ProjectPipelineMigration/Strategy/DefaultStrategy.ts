@@ -1,4 +1,4 @@
-import { resolvePaging } from "../../../../utils";
+import { resolvePaging } from "../../../../utils/fetch";
 import { ProjectETLParticipants, ProjectPipelineMigrationStrategy } from "./types";
 
 export class ProjectPipelineMigrationDefaultStrategy implements ProjectPipelineMigrationStrategy{
@@ -27,16 +27,21 @@ export class ProjectPipelineMigrationDefaultStrategy implements ProjectPipelineM
         .dataLoader
         .createWithBasicData(transformedData)
 
-      return paging;
+      return {components, paging};
     }
 
     async migrateAllBasicDataProjects(){
-      const paging = await this.migrateBasicDataProjects();
+      const {components: firstComponents, paging} = await this
+        .migrateBasicDataProjects();
 
+      const result = firstComponents
       const totalPages = resolvePaging(paging)
 
       for (let page = 2; page <= totalPages; page++) {
-        await this.migrateBasicDataProjects(page);
+        const {components} = await this.migrateBasicDataProjects(page);
+        result.push(...components)
       }
+
+      return result;
     }
   }

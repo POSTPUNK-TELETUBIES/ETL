@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { describe, expect, it } from "vitest";
 import { BaseErrorIterator } from "./BaseErrorIterator";
 import { NotImplementedError } from "./NotImplemented";

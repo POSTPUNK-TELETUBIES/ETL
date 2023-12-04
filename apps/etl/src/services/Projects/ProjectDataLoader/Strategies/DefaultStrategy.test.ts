@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { describe, expect, it, vi } from 'vitest'
 import { ProjectDataLoaderDefaultStrategy } from '.'
 import { IProject } from '../../../../data/models/project'

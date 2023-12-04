@@ -1,5 +1,5 @@
 import { Component, Metrics, SonarqubeClient, Issue } from 'sonar-sdk';
-import { getLeftData, resolvePaging } from '../utils';
+import { getLeftData, resolvePaging } from '../utils/fetch';
 import { inject, injectable } from 'inversify';
 import {
   ContainerTags,
@@ -109,7 +109,7 @@ export class SonarqubeService implements SonarQubeFetchService {
       .fetchers
       .issues
       .search({
-        projectKeys: [projectKey],
+        componentKeys: [projectKey],
         p: 1,
         ps: 500
       })

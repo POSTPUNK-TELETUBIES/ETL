@@ -28,6 +28,7 @@ const searchProjects = vi.fn((page: number) => ({
   components: totalComponents.slice((page - 1) * pageSize, page * pageSize),
 }));
 
+// TODO: fix mocker because api has changed
 vi.mock('sonar-sdk', () => ({
     SonarqubeSdk: vi.fn(() => ({searchProjects})),
   }

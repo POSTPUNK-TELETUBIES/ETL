@@ -1,9 +1,13 @@
+import { inject, injectable } from "inversify";
 import { IssueETLParticipants, IssuePipelineMigrationStrategy } from ".";
 import { issueModel } from "../../../../data/models/issue";
-import { resolvePaging } from "../../../../utils";
+import { resolvePaging } from "../../../../utils/fetch";
+import { NewContainerTags } from "../../../../types";
 
+@injectable()
 export class DefaultIssuesStrategy implements IssuePipelineMigrationStrategy{
   constructor(
+    @inject(NewContainerTags.ISSUES_PIPELINE_PARTICIPANTS) 
     private participants: IssueETLParticipants
   ){}
 
@@ -15,13 +19,14 @@ export class DefaultIssuesStrategy implements IssuePipelineMigrationStrategy{
       .issues
       .search({
         componentKeys: [projectKey],
-        p: page
+        p: page,
+        ps: 500
       })
   
     const transformedIssues = this
       .participants
       .transformer
-      .resolveRawDataToIssues(issues)
+      .resolveRawIssuesToIssues(issues)
 
     await this
       .participants

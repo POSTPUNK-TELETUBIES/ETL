@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { injectable } from "inversify";
 import { NotImplementedError } from "./NotImplemented";
 
 export type ContinueOnError<T> = boolean | ((error: any, instance?: T) => boolean);
@@ -13,7 +14,6 @@ export interface ErrorHandlingItemConfig<T>{
 
 export type PredicateExecute<T> = (executor: T)=>Promise<unknown>;
 
-
 export function resolveContinueOnError<T>(
   error: any, 
   instance: T,
@@ -25,7 +25,6 @@ export function resolveContinueOnError<T>(
 
   return continueOnError
 }
-
 
 /**
  * A error handler that tries , in a series of classes that has the same interface,
@@ -49,18 +48,24 @@ export function resolveContinueOnError<T>(
  * 
  * @variation if save to data base fails, immediately saves to the cache to avoid losing data
  */
+@injectable()
 export abstract class BaseErrorIterator<T>{
   constructor(private items: ErrorHandlingItemConfig<T>[]){}
 
   async iterate(executeAlgorithmPredicate: PredicateExecute<T>){
+    let index = 0;
     for(const {item, continueOnError} of this.items){
       try{
         return await executeAlgorithmPredicate(item);
       }catch(error){
         if(
+          index !== this.items.length - 1  && (
           error instanceof NotImplementedError || 
           resolveContinueOnError<T>(error, item, continueOnError)
-        ) continue;
+        )) {
+          index++;
+          continue;
+        }
 
         throw error;
       }
