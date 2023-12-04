@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { ProjectPipelineMigrationDefaultStrategy } from '.'
-import { ProjectDataLoader } from "../../ProjectDataLoader";
 import { ProjectDataLoaderStrategy } from "../../ProjectDataLoader/Strategies";
 import { IProject } from "../../../../data/models/project";
 import { ProjectTransformer } from "../../ProjectTransformer";
@@ -11,8 +10,6 @@ class DummyStrategy implements ProjectDataLoaderStrategy{
     return data;
   }
 }
-
-const dataLoader = new ProjectDataLoader(new DummyStrategy())
 
 const dataSource = new SonarqubeSdk({
   baseURL: 'https://fakeurl.com'
@@ -32,7 +29,7 @@ vi.spyOn(dataSource.fetchers.components, 'searchProjects')
   .mockImplementationOnce(()=>Promise.resolve(dummyData))
 
 const strategy = new ProjectPipelineMigrationDefaultStrategy({
-  dataLoader,
+  dataLoader: new DummyStrategy(),
   transformer: new ProjectTransformer(),
   dataSource
 });

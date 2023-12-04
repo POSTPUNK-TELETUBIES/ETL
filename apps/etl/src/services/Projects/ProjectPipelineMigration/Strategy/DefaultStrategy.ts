@@ -1,4 +1,5 @@
-import { ProjectETLParticipants, ProjectPipelineMigrationStrategy } from "../types";
+import { resolvePaging } from "../../../../utils";
+import { ProjectETLParticipants, ProjectPipelineMigrationStrategy } from "./types";
 
 export class ProjectPipelineMigrationDefaultStrategy implements ProjectPipelineMigrationStrategy{
     constructor(
@@ -8,22 +9,34 @@ export class ProjectPipelineMigrationDefaultStrategy implements ProjectPipelineM
     /**
      * @todo search projects method should admit more params for filtering
      */
-    async migrateBasicDataProjects(){
-      const { components } = await this
+    async migrateBasicDataProjects(pageNumber = 1){
+      const { components, paging } = await this
         .participants
         .dataSource
         .fetchers
         .components
-        .searchProjects(1)
+        .searchProjects(pageNumber)
       
       const transformedData = this
         .participants
         .transformer
         .resolveComponentsToProjects(components)
       
-      return await this
+      await this
         .participants
         .dataLoader
         .createWithBasicData(transformedData)
+
+      return paging;
+    }
+
+    async migrateAllBasicDataProjects(){
+      const paging = await this.migrateBasicDataProjects();
+
+      const totalPages = resolvePaging(paging)
+
+      for (let page = 2; page <= totalPages; page++) {
+        await this.migrateBasicDataProjects(page);
+      }
     }
   }
