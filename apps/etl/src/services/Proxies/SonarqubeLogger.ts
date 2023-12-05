@@ -1,4 +1,4 @@
-import { Component, Metrics } from 'sonar-sdk';
+import { Component, Issue, Metrics } from 'sonar-sdk';
 import {
   FetchingStrategy,
   SonarQubeFetchService,
@@ -28,6 +28,9 @@ export class SonarqubeLogger implements SonarQubeFetchService {
     @inject(ContainerTags.Options) private options = SonarqubeLogger.defaultOptions
   ) {
     this.options = { ...SonarqubeLogger.defaultOptions, ...options }
+  }
+  getIssueByProject(): Promise<Issue[]> {
+    throw new Error('Method not implemented.');
   }
 
   private logInfoIfIsOn(data: unknown) {

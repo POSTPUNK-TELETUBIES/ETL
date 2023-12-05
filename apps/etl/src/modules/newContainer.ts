@@ -2,53 +2,61 @@ import 'reflect-metadata';
 import { Container } from "inversify";
 import { ContainerTags, NewContainerTags } from "../types";
 import { ErrorHandlingItemConfig } from "../errors";
-import { 
-  IssuesTransformer, 
+import {
+  IssuesTransformer,
   DefaultIssuesStrategy,
   DefaultIssueDataLoaderStrategy,
   IssueETLParticipants,
   IssuePipelineMigrationStrategy,
-  IssuePipelineMigrationStrategyProxy 
+  IssueMigrationProxyErrorsStrategy
 } from "../services/Issues";
 
 import { container } from ".";
 
-
-export const newContainer = new Container({
+/**
+ * This container was created because the issues module got a refactor
+ * and the old container was preserved to avoid breaking changes with projects migrations
+ * @todo refactor container architecture to have global parents
+ * in case you are new with Inversion of Control and containers
+ * you should see
+ * @link https://martinfowler.com/articles/injection.html
+ * @todo create documentation about IoC and Dependency Injection in this project
+ */
+export const issuesModuleContainer = new Container({
   autoBindInjectable: true,
   defaultScope: 'Singleton'
 });
 
 
-newContainer
+issuesModuleContainer
   .bind(IssuesTransformer)
   .toSelf()
 
-newContainer
+issuesModuleContainer
   .bind(NewContainerTags.ISSUES_DATA_LOADER)
   .to(DefaultIssueDataLoaderStrategy)
 
-newContainer
+issuesModuleContainer
   .bind<IssueETLParticipants>(NewContainerTags.ISSUES_PIPELINE_PARTICIPANTS)
   .toConstantValue({
-    dataLoader: newContainer.get(NewContainerTags.ISSUES_DATA_LOADER),
+    dataLoader: issuesModuleContainer.get(NewContainerTags.ISSUES_DATA_LOADER),
     dataSource: container.get(ContainerTags.SonarClient),
-    transformer: newContainer.get(IssuesTransformer)
+    transformer: issuesModuleContainer.get(IssuesTransformer)
   })
 
-newContainer
+issuesModuleContainer
   .bind(DefaultIssuesStrategy)
   .toSelf()
 
 type ErrorHandler = ErrorHandlingItemConfig<IssuePipelineMigrationStrategy>
 
-newContainer
+issuesModuleContainer
   .bind<ErrorHandler[]>(NewContainerTags.ISSUES_PIPELINE_CONFIG)
   .toConstantValue([{
-    item: newContainer.get(DefaultIssuesStrategy),
+    item: issuesModuleContainer.get(DefaultIssuesStrategy),
     continueOnError: false,
   }])
 
-newContainer
+issuesModuleContainer
   .bind(NewContainerTags.ISSUES_PIPELINE_STRATEGY)
-  .to(IssuePipelineMigrationStrategyProxy)
+  .to(IssueMigrationProxyErrorsStrategy)

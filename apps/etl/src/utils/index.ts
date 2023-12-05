@@ -8,10 +8,10 @@ export const parseProject = (project: Component) => ({
   analysisDate: project.analysisDate,
 });
 
-export const timeCalcDefaultCallback = (initTime: number) => 
+export const timeCalcDefaultCallback = (initTime: number) =>
   `Duracion: ${(Date.now() - initTime) / 1000} segundos`
 
-export async function executeWithTime<T = unknown>(
+export async function executeWithTimeLogger<T = unknown>(
   callback: () => Promise<T>,
   logger: Logger = loggerForFunctions,
   timeCalcCallback = timeCalcDefaultCallback

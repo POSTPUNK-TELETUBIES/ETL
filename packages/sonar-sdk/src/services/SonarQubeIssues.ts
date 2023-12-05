@@ -3,13 +3,14 @@ import { IssuesResponse, SearchIssuesParams } from "../types";
 import { FetchResolver } from "./FetchResolver";
 import { transformParams } from "../utils";
 
-export class SonarQubeIssues extends FetchResolver{
-  constructor(private client: AxiosInstance, basePath = '/issues'){
+export class SonarQubeIssues extends FetchResolver {
+  constructor(private client: AxiosInstance, basePath = '/issues') {
     super(basePath)
   }
-  
-  async search(params: SearchIssuesParams = {}){
-    const { data } = await this.client.get<IssuesResponse>('/search', {
+
+  async search(params: SearchIssuesParams = {}) {
+    const { data } = await this.client.get<IssuesResponse>(
+      this.resolvePath('/search'), {
       params: transformParams<SearchIssuesParams>(params)
     });
 

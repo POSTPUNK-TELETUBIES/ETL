@@ -2,11 +2,12 @@ import mongoose, { Schema } from "mongoose";
 import { Severity, TypeIssue } from "../../types/issues";
 
 export interface IIssue {
-  sonarKey: string;
+  keyIssue: string;
   observation: TypeIssue;
+  problemDescription: string;
   severity: Severity;
   language?: string;
-  rule?: string;
+  ruleCode?: string;
   startLine?: number;
   developerEmail?: string;
   issueCreatedAt?: Date;
@@ -15,18 +16,18 @@ export interface IIssue {
   status?: string;
   scope?: string;
   tags?: string[];
-  sonarRuleMessage?: string;
   file?: string;
   project?: string;
   commitDate?: Date;
 }
 
-export const issueSchema = new Schema({
-  sonarKey: { type: String },
-  observation: { type: TypeIssue },
-  severity: { type: Severity },
+export const issueSchema = new Schema<IIssue>({
+  keyIssue: { type: String },
+  observation: { type: String },
+  problemDescription: { type: String },
+  severity: { type: String },
   language: { type: String },
-  rule: { type: String },
+  ruleCode: { type: String },
   startLine: { type: Number },
   developerEmail: { type: String },
   issueCreatedAt: { type: Date },
@@ -35,7 +36,6 @@ export const issueSchema = new Schema({
   status: { type: String },
   scope: { type: String },
   tags: { type: Array, "default": [] },
-  sonarRuleMessage: { type: String },
   file: { type: String },
   project: { type: String },
   commitDate: { type: Date },

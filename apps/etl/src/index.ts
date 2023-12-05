@@ -1,65 +1,11 @@
 import 'reflect-metadata';
 import { connect } from './services/Connection';
-
 import { select } from '@inquirer/prompts';
-import { ContainerTags, NewContainerTags, Operations } from './types';
-import { SonarqubeToDatabase } from './services/SonarqubeToDatabase';
-import { Reports } from './services/Reports';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { Operations } from './types';
 import { logger } from './global';
-import { container } from './modules';
-import { executeWithTime } from './utils';
-import { newContainer } from './modules/newContainer';
-import { IssuePipelineMigrationStrategy } from './services/Issues/IssuesPipelineMigration/Strategy';
+import { operationsByName } from './operations';
 
-const operations = {
-  [Operations.ProjectMigrations]: async () => {
-    await executeWithTime(async () => {
-      await container
-        .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
-        .migrateProjects();
-    }
-    )
-  },
-  [Operations.MetricsMigrations]: async () => {
-    await executeWithTime(async () => {
-      await container
-        .get<SonarqubeToDatabase>(ContainerTags.SonarqubeMigrations)
-        .migrateMetrics();
-    })
-  },
-  [Operations.CoverageReports]: async () => {
-    await executeWithTime(async () => {
-      const dataCsv = await container
-        .get<Reports>(Reports)
-        .getCoverageMetrics();
-      await mkdir('./csv', { recursive: true });
-      await writeFile('./csv/coverageMetrics.csv', dataCsv);
-    })
-  },
-  [Operations.DuplicationReports]: async () => {
-    await executeWithTime(async () => {
-      const dataCsv = await container
-        .get<Reports>(Reports)
-        .getDuplicationMetrics();
-      await mkdir('./csv', { recursive: true });
-      await writeFile('./csv/duplicationMetrics.csv', dataCsv);
-    })
-  },
-  [Operations.Exit]: () => {
-    logger.info('Saliendo');
-    process.exit(0);
-  },
-  [Operations.IssuesMigrations]: async ()=>{
-    await executeWithTime(async()=>
-      await newContainer
-        .get<IssuePipelineMigrationStrategy>(NewContainerTags.ISSUES_PIPELINE_STRATEGY)
-        .migrateAll()
-    )
-  }
-};
-
-const mainSelect = async () => {
+const getMainAnswerOperations = async () => {
   return await select({
     message: 'Seleccione una operacion:',
     choices: [
@@ -91,11 +37,14 @@ const mainSelect = async () => {
   });
 };
 
+/**
+ * @recursive
+ */
 const getAnswer = async () => {
-  const answer = await mainSelect();
+  const operationName = await getMainAnswerOperations();
 
   try {
-    await operations[answer]();
+    await operationsByName[operationName]();
   } catch (error) {
     logger.error(error);
     console.log('Ocurrio un error');

@@ -1,17 +1,17 @@
 import { inject, injectable } from "inversify";
 import { IssueETLParticipants, IssuePipelineMigrationStrategy } from ".";
-import { issueModel } from "../../../../data/models/issue";
 import { resolvePaging } from "../../../../utils/fetch";
 import { NewContainerTags } from "../../../../types";
+import { Project } from "../../../../data/models/project";
 
 @injectable()
-export class DefaultIssuesStrategy implements IssuePipelineMigrationStrategy{
+export class DefaultIssuesStrategy implements IssuePipelineMigrationStrategy {
   constructor(
-    @inject(NewContainerTags.ISSUES_PIPELINE_PARTICIPANTS) 
+    @inject(NewContainerTags.ISSUES_PIPELINE_PARTICIPANTS)
     private participants: IssueETLParticipants
-  ){}
+  ) { }
 
-  async partiallyMigrateByProjectKey(projectKey: string, page  =1 ){
+  async partiallyMigrateByProjectKey(projectKey: string, page = 1) {
     const { issues, paging } = await this
       .participants
       .dataSource
@@ -22,7 +22,7 @@ export class DefaultIssuesStrategy implements IssuePipelineMigrationStrategy{
         p: page,
         ps: 500
       })
-  
+
     const transformedIssues = this
       .participants
       .transformer
@@ -41,16 +41,16 @@ export class DefaultIssuesStrategy implements IssuePipelineMigrationStrategy{
 
     const leftPages = resolvePaging(paging)
 
-    for(let i = 2; i <= leftPages; i++){
+    for (let i = 2; i <= leftPages; i++) {
       await this.partiallyMigrateByProjectKey(projectKey, i)
     }
 
   }
   async migrateAll() {
-    const issueSonarKeys: string[] = await issueModel.distinct('sonarKey')
+    const issueSonarKeys: string[] = await Project.distinct('sonarKey')
 
-    for(const sonarKey of issueSonarKeys){
+    for (const sonarKey of issueSonarKeys) {
       await this.migrateByProjectKey(sonarKey)
     }
-  } 
+  }
 }

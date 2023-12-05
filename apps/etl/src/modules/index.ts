@@ -2,12 +2,12 @@ import 'reflect-metadata';
 import { Container } from "inversify";
 import { ContainerTags } from "../types";
 import { SonarqubeSdk } from "sonar-sdk";
-import { env } from "process";
 import { ConcurrentFetchingStrategy, SonarqubeService } from "../services/Sonarqube";
 import { Project } from "../data/models/project";
 import { SonarqubeToDatabase } from "../services/SonarqubeToDatabase";
 import { Reports } from "../services/Reports";
 import { SonarqubeLogger } from "../services/Proxies/SonarqubeLogger";
+import { env } from '../config';
 
 export const container = new Container();
 

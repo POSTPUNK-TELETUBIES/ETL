@@ -1,3 +1,5 @@
+export * from './issues';
+
 export enum Operations {
   ProjectMigrations = 'PROJECT_MIGRATIONS',
   MetricsMigrations = 'METRICS_MIGRATIONS',
