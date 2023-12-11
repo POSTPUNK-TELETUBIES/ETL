@@ -1,9 +1,12 @@
+export * from './issues';
+
 export enum Operations {
   ProjectMigrations = 'PROJECT_MIGRATIONS',
   MetricsMigrations = 'METRICS_MIGRATIONS',
   CoverageReports = 'COVERAGE_REPORTS',
   DuplicationReports = 'DUPLICATION_REPORTS',
   Exit = 'EXIT',
+  IssuesMigrations = 'ISSUES_MIGRATIONS'
 }
 
 export enum ContainerTags {
@@ -30,4 +33,11 @@ export enum DuplicationMetricKeys {
   DuplicatedBlocks = 'duplicated_blocks',
   DuplicatedFiles = 'duplicated_files',
   DuplicatedLinesDensity = 'duplicated_lines_density',
+}
+
+export const enum NewContainerTags {
+  ISSUES_PIPELINE_STRATEGY = 'IssuesStrategy',
+  ISSUES_PIPELINE_CONFIG = 'IssuesConfig',
+  ISSUES_PIPELINE_PARTICIPANTS = 'IssuesParticipants',
+  ISSUES_DATA_LOADER = 'IssuesDataLoader'
 }

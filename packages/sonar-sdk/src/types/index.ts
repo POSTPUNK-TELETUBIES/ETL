@@ -29,13 +29,6 @@ export interface Paging {
   total: number;
 }
 
-export interface ResponseMetrics {
-  measures: Metrics[];
-}
 
-export interface Metrics {
-  metric: string;
-  value: string;
-  component: string;
-  bestValue?: boolean;
-}
+export * from './metrics';
+export * from './issues'
