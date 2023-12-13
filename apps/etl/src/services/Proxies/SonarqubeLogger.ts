@@ -1,7 +1,7 @@
-import { Component, Metrics } from 'sonar-sdk';
+import { Component, Issue, Metrics } from 'sonar-sdk';
 import {
   FetchingStrategy,
-  FetchMetricsAndProjects,
+  SonarQubeFetchService,
   SonarqubeService,
 } from '../Sonarqube';
 import pino, { destination, Logger } from 'pino';
@@ -16,7 +16,7 @@ interface SonarqubeLoggerOptions {
 
 
 @injectable()
-export class SonarqubeLogger implements FetchMetricsAndProjects {
+export class SonarqubeLogger implements SonarQubeFetchService {
   private static defaultOptions: SonarqubeLoggerOptions = {
     logger: pino(destination({ dest: `${env.sonarQubeLogs}`, sync: true })),
     isOn: false,
@@ -28,6 +28,9 @@ export class SonarqubeLogger implements FetchMetricsAndProjects {
     @inject(ContainerTags.Options) private options = SonarqubeLogger.defaultOptions
   ) {
     this.options = { ...SonarqubeLogger.defaultOptions, ...options }
+  }
+  getIssueByProject(): Promise<Issue[]> {
+    throw new Error('Method not implemented.');
   }
 
   private logInfoIfIsOn(data: unknown) {
