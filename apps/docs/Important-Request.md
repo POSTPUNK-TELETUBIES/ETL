@@ -1,8 +1,10 @@
 # Important Requests
+The following requests will be used throughout development to generate the project report.
 
 ## Projects
 
 ### Get basic data 
+#### Bulk Request
 
 One could get max 500 projects per request
 
@@ -19,6 +21,7 @@ in one request there should be 500 at max projects to bulk
 create/migrate.
 
 ### Get data of table Project
+#### Single Request
 The request provides us with the following information if we pass it to you through metricKeys 
 
 * lines
@@ -44,6 +47,7 @@ a list of projects.
 
 
 ### Get data of table about languages of Project
+#### Single Request
 The request provides us with information about the languages ​​and the quality gate.
 
 * quality gate

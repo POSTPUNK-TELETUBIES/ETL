@@ -1,1 +1,5 @@
-Welcome to the ETL wiki!
+# Welcome to the ETL Reports wiki!
+
+![](https://www.ewsolutions.com/wp-content/uploads/2019/07/image-10.png)
+
+Welcome to the ETL Wiki! The following project focuses on the development of a robust extract, transform and load (ETL) system designed to effortlessly generate comprehensive reports in Excel. Leveraging the capabilities of the SonarQube API, this initiative focuses specifically on issues, project metrics, and coverage data. This ETL process is designed to seamlessly extract relevant information from SonarQube, transform it into a structured format, and load it into Excel reports for an informative and easy-to-use experience. While browsing this wiki, discover how this ETL development allows you to generate efficient reports on issues, metrics, and project coverage, using the rich data available through the SonarQube API. Welcome aboard and explore the potential of enhanced reporting within the scope of SonarQube!
