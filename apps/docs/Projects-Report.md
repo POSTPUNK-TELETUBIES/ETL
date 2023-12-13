@@ -5,13 +5,13 @@ from http request from Sonar Qube REST API.
 
 ## Headers relation
 
-1. [Project Name](#project-name)
-2. [Project Key](#project-key)
-3. [Lines of Code](#lines-of-code)
-4. [Quality Gate](#quality-gate)
-5. [Language n](#language-n)
-6. [Quality Profile per Language](#quality-profile-language-n)
-7. [Lines of Code per Language](#lines-of-code-per-language)
+1. [Project Name](#1project-name)
+2. [Project Key](#2project-key)
+3. [Lines of Code](#3lines-of-code)
+4. [Quality Gate](#4quality-gate)
+5. [Language n](#5language-n)
+6. [Quality Profile per Language](#6quality-profile-language-n)
+7. [Lines of Code per Language](#7lines-of-code-per-language)
 8. [Lines](#for-the-following-header-fields-the-same-request-will-be-used)
 9. [Statements](#for-the-following-header-fields-the-same-request-will-be-used)
 10. [Functions](#for-the-following-header-fields-the-same-request-will-be-used)
@@ -22,7 +22,7 @@ from http request from Sonar Qube REST API.
 
 ## Headers
 
-### Project Name
+### 1.Project Name
 #### Bulk Request
 
 [Basic data](./Important-Request#get-basic-data)
@@ -30,7 +30,7 @@ from http request from Sonar Qube REST API.
 #### Notes
 One could get 500 max projects per request
 
-### Project Key
+### 2.Project Key
 #### Bulk Request
 
 [Basic data](./Important-Request#get-basic-data)
@@ -38,23 +38,17 @@ One could get 500 max projects per request
 #### Notes
 One could get 500 max projects per request
 
-***
-**Disclaimer**
-***
-
-Starting from this moment, the data retrieval process requires individual requests one at a time. It doesn't allow passing a list of projects; instead, it supports only one project per query parameter.
-
-### Lines of Code
+### 3.Lines of Code
 #### Single Request
 
-[left data of table project](./Important-Request#get-data-of-table-project)
+[Single Request](./Important-Request#get-data-of-table-project)
 
-### Quality Gate
+### 4.Quality Gate
 #### Single Request
 
 [Single Request](./Important-Request#get-data-of-table-about-languages-of-project)
 
-### Language-n
+### 5.Language-n
 #### Single Request
 
 [Single Request](./Important-Request#get-data-of-table-about-languages-of-project)
@@ -63,7 +57,7 @@ Starting from this moment, the data retrieval process requires individual reques
 The field name language is an array 
 of programing languages .
 
-### Quality profile language-n
+### 6.Quality profile language-n
 #### Single Request
 
 [Single Request](./Important-Request#get-data-of-table-about-languages-of-project)
@@ -72,7 +66,7 @@ of programing languages .
 The field QualityProfiles is an array 
 of programing languages .
 
-### Lines of code per language
+### 7.Lines of code per language
 #### Single Request
 
 [Single Request](./Important-Request#get-data-of-table-project)
