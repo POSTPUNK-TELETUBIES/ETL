@@ -78,8 +78,10 @@ of programing languages .
 [Single Request](./Important-Request#get-data-of-table-project)
 
 #### Notes
-The information of the lines of code comes in 1 single line for all languages
-ejm:
+Number of ```lines of code``` for each language is not separated in different attributes but is   
+a string that need parsing
+
+The following structure could be nested but the format of ```value``` is accurate
 
 ```json
 {
@@ -88,7 +90,7 @@ ejm:
 }
 ```
 
-#### Strategy
+For instance
 ```ts
 const parsedDataLanguages = (dataString)=>{
   const languagePairs = dataString.split(';');
